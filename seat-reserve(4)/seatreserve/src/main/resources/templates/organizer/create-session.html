@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Add Session — EventHub</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/events/{id}(id=${eventId})}" style="color: var(--text-muted); font-size: 0.9rem;">
+            &larr; Back to Event
+        </a>
+    </div>
+
+    <div class="card form-card" style="max-width: 650px;">
+        <div style="margin-bottom: 2rem;">
+            <span class="brand-badge" style="margin-bottom: 0.5rem; display: inline-block;">Session Management</span>
+            <h2>Add Session to Event</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Create a breakout track, keynote, or workshop under this conference.
+            </p>
+        </div>
+
+        <form th:action="@{/events/{id}/sessions(id=${eventId})}" th:object="${form}" method="post">
+            <div class="form-group">
+                <label for="title" class="form-label">Session Title</label>
+                <input type="text" id="title" th:field="*{title}" class="form-input" 
+                       placeholder="e.g. Microservices &amp; Spring Boot" required autofocus>
+                <span class="form-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">
+                    Title required
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" th:field="*{description}" class="form-textarea" rows="3"
+                          placeholder="Overview of topics and takeaways..."></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="startTime" class="form-label">Start Time</label>
+                    <input type="datetime-local" id="startTime" th:field="*{startTime}" class="form-input" required>
+                    <span class="form-error" th:if="${#fields.hasErrors('startTime')}" th:errors="*{startTime}">
+                        Valid start time required
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="endTime" class="form-label">End Time</label>
+                    <input type="datetime-local" id="endTime" th:field="*{endTime}" class="form-input" required>
+                    <span class="form-error" th:if="${#fields.hasErrors('endTime')}" th:errors="*{endTime}">
+                        Valid end time required
+                    </span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="capacity" class="form-label">Total Room Capacity</label>
+                    <input type="number" id="capacity" th:field="*{capacity}" class="form-input" 
+                           min="1" max="1000" placeholder="e.g. 50" required>
+                    <span class="form-error" th:if="${#fields.hasErrors('capacity')}" th:errors="*{capacity}">
+                        Capacity must be at least 1
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="price" class="form-label">Seat Price (USD $)</label>
+                    <input type="number" step="0.01" min="0.00" id="price" th:field="*{price}" class="form-input" 
+                           placeholder="0.00" required>
+                    <span class="form-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}">
+                        Valid price required
+                    </span>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                    Save Session &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

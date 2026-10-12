@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Confirm Seat Reservation — EventHub</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <span class="brand-badge" style="margin-bottom: 0.5rem; display: inline-block;">Temporary Hold Secured</span>
+        <h1>Review &amp; Confirm Your Reservation</h1>
+        <p style="color: var(--text-muted); margin-top: 0.25rem;">
+            Your seat is currently locked in PostgreSQL. Confirm within the hold window to finalize your booking.
+        </p>
+    </div>
+
+    <!-- Ticket Stub Card -->
+    <div class="ticket-wrapper">
+        <div class="ticket">
+            <!-- Ticket Header (Perforated Top) -->
+            <div class="ticket-header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--primary); font-weight: 700; letter-spacing: 0.1em;">
+                            Official Conference Pass
+                        </span>
+                        <h2 th:text="${reservation.seat.session.event.name}" style="font-size: 1.6rem; margin-top: 0.25rem;">
+                            DevCon 2026
+                        </h2>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="role-tag" style="background: rgba(245, 158, 11, 0.2); color: #fde68a; border-color: rgba(245, 158, 11, 0.4);">
+                            PENDING HOLD
+                        </span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                    <div>📍 <span th:text="${reservation.seat.session.event.venue}">Grand Exhibition Center</span></div>
+                    <div>🎤 Session: <strong th:text="${reservation.seat.session.title}" style="color: #fff;">Kubernetes Workshop</strong></div>
+                    <div>⏰ <span th:text="${reservation.seat.session.startTime}">09:00 UTC</span></div>
+                </div>
+            </div>
+
+            <!-- Ticket Body -->
+            <div class="ticket-body">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div class="ticket-seat-badge">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">
+                            Reserved Seat
+                        </span>
+                        <span style="font-size: 1.75rem; font-weight: 800; font-family: var(--font-display); color: #fff;">
+                            <span th:text="'Sec ' + ${reservation.seat.section}">Sec A</span> &bull; 
+                            <span th:text="'Row ' + ${reservation.seat.rowLabel}">Row 1</span> &bull; 
+                            <span th:text="'Seat ' + ${reservation.seat.seatNumber}">Seat 5</span>
+                        </span>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <small style="color: var(--text-dim); display: block;">Attendee Account</small>
+                        <span th:text="${reservation.user.email}" style="font-weight: 600; color: #cbd5e1;">customer@email.com</span>
+                    </div>
+                </div>
+
+                <!-- Hold Expiration Notice -->
+                <div style="margin-top: 1.5rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.25rem;">⏳</span>
+                    <div style="font-size: 0.85rem; color: #fde68a;">
+                        <strong>Pessimistic Hold Active:</strong> Expires at 
+                        <span th:text="${reservation.expiresAt}">2026-09-29 13:00 UTC</span>.
+                        If unconfirmed, our scheduled sweep job will automatically release the seat.
+                    </div>
+                </div>
+
+                <!-- Barcode visual -->
+                <div class="ticket-barcode"></div>
+
+                <!-- Price and Payment Action Form -->
+                <div style="margin-top: 1.5rem; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-md); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block;">Total Due</span>
+                        <div style="font-size: 1.8rem; font-weight: 800; color: #38bdf8;"
+                             th:text="${'$' + #numbers.formatDecimal(reservation.seat.session.price != null ? reservation.seat.session.price : 0, 1, 2)}">
+                            $49.00
+                        </div>
+                    </div>
+                    <form th:action="@{/reservations/{id}/confirm(id=${reservation.id})}" method="post" style="flex: 1; min-width: 220px;">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block" style="font-size: 1.1rem; justify-content: center;">
+                            💳 Pay &amp; Confirm &amp; Finalize Booking &rarr;
+                        </button>
+                    </form>
+                </div>
+                <p style="text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-top: 0.75rem;">
+                    Simulated payment gateway &bull; 100% money-back guarantee &bull; Instant ticket issuance
+                </p>
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a th:href="@{/sessions/{id}(id=${reservation.seat.session.id})}" style="color: var(--text-dim); font-size: 0.85rem;">
+                            Cancel and return to seat map
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

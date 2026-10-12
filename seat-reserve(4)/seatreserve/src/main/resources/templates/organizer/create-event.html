@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Create Event — EventHub</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/events}" style="color: var(--text-muted); font-size: 0.9rem;">&larr; Back to Events</a>
+    </div>
+
+    <div class="card form-card" style="max-width: 600px;">
+        <div style="margin-bottom: 2rem;">
+            <span class="brand-badge" style="margin-bottom: 0.5rem; display: inline-block;">Organizer Portal</span>
+            <h2>Create New Conference Event</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Set up a new conference or workshop series. You will be assigned as its owner.
+            </p>
+        </div>
+
+        <form th:action="@{/organizer/events}" th:object="${form}" method="post">
+            <div class="form-group">
+                <label for="name" class="form-label">Event Name</label>
+                <input type="text" id="name" th:field="*{name}" class="form-input" 
+                       placeholder="e.g. Cloud Native Summit 2026" required autofocus>
+                <span class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">
+                    Event name required
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="venue" class="form-label">Venue Location</label>
+                <input type="text" id="venue" th:field="*{venue}" class="form-input" 
+                       placeholder="e.g. Convention Center, Hall B" required>
+                <span class="form-error" th:if="${#fields.hasErrors('venue')}" th:errors="*{venue}">
+                    Venue required
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="startTime" class="form-label">Event Start Date &amp; Time (UTC)</label>
+                <input type="datetime-local" id="startTime" th:field="*{startTime}" class="form-input" required>
+                <span class="form-error" th:if="${#fields.hasErrors('startTime')}" th:errors="*{startTime}">
+                    Valid start time required
+                </span>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                    Publish Event &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${eventSession.title + ' — Seat Map — EventHub'}">Session Seat Map — EventHub</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/events/{id}(id=${eventSession.eventId})}" style="color: var(--text-muted); font-size: 0.9rem;">
+            &larr; Back to Event Sessions
+        </a>
+    </div>
+
+    <!-- Session Overview Header -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <span class="brand-badge" style="margin-bottom: 0.5rem; display: inline-block;">Live Seat Selection</span>
+                <h1 th:text="${eventSession.title}" style="font-size: 2.2rem; margin: 0.25rem 0 0.5rem;">Hands-on: Kubernetes Workshop</h1>
+                <p th:text="${eventSession.description}" style="color: var(--text-muted); max-width: 700px;">
+                    Interactive breakout workshop.
+                </p>
+                <div style="display: flex; gap: 1.5rem; margin-top: 1rem; font-size: 0.95rem; color: var(--text-dim); align-items: center; flex-wrap: wrap;">
+                    <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); padding: 0.35rem 0.8rem; border-radius: var(--radius-sm); color: #38bdf8; font-weight: 700; font-size: 1.1rem;">
+                        💳 <span th:text="${'$' + #numbers.formatDecimal(eventSession.price != null ? eventSession.price : 0, 1, 2)}">$49.00</span> / seat
+                    </div>
+                    <div>⏰ <span th:text="${eventSession.startTime}">11:00</span> &ndash; <span th:text="${eventSession.endTime}">12:30</span></div>
+                    <div>🪑 Total: <strong th:text="${eventSession.totalSeats}" style="color: #fff;">30</strong></div>
+                    <div>🟢 Available: <strong th:text="${eventSession.availableSeats}" style="color: var(--status-available);">25</strong></div>
+                </div>
+            </div>
+
+            <!-- Registration Notice / Action -->
+            <div th:if="${!isRegistered and #authorization.expression('hasRole(''CUSTOMER'')')}"
+                 style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: var(--radius-md); max-width: 320px;">
+                <p style="color: #fca5a5; font-size: 0.85rem; margin-bottom: 0.75rem;">
+                    ⚠️ You are not registered for the parent event yet. Registration is required to hold seats.
+                </p>
+                <form th:action="@{/events/{id}/register(id=${eventSession.eventId})}" method="post">
+                    <button type="submit" class="btn btn-primary btn-sm btn-block">
+                        Register for Event Now
+                    </button>
+                </form>
+            </div>
+            <div sec:authorize="isAnonymous()"
+                 style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1rem; border-radius: var(--radius-md); max-width: 300px;">
+                <p style="color: #c7d2fe; font-size: 0.85rem; margin-bottom: 0.75rem;">
+                    Sign in with a customer account to hold seats.
+                </p>
+                <a th:href="@{/login}" class="btn btn-secondary btn-sm btn-block">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theatrical Seat Map Container -->
+    <div class="seat-map-container">
+        <!-- Stage / Screen -->
+        <div class="stage-wrapper">
+            <div class="stage-light"></div>
+            <div class="stage">STAGE / PODIUM / SCREEN</div>
+        </div>
+
+        <!-- Legend -->
+        <div class="seat-legend">
+            <div class="legend-item">
+                <div class="legend-swatch swatch-available"></div>
+                <span>Available (Click to Hold)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-swatch swatch-held"></div>
+                <span>Held (Pending Confirmation)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-swatch swatch-booked"></div>
+                <span>Booked / Confirmed</span>
+            </div>
+        </div>
+
+        <!-- Empty State if no seats generated -->
+        <div th:if="${seats == null || seats.isEmpty()}" style="padding: 2rem;">
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">No physical seats have been generated for this session yet.</p>
+            <div sec:authorize="hasRole('ORGANIZER')">
+                <a th:href="@{/sessions/{id}/seats/generate(id=${eventSession.id})}" class="btn btn-primary">
+                    Generate Seats Layout
+                </a>
+            </div>
+        </div>
+
+        <!-- Dynamic Seat Layout Grouped by Section and Row -->
+        <div th:if="${sectionMap != null}">
+            <div th:each="sectionEntry : ${sectionMap}" class="section-block">
+                <h4 class="section-title" th:text="'Section ' + ${sectionEntry.key}">Section A</h4>
+
+                <div th:each="rowEntry : ${sectionEntry.value}" class="row-block">
+                    <span class="row-label" th:text="'R' + ${rowEntry.key}">R1</span>
+
+                    <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;">
+                        <th:block th:each="seat : ${rowEntry.value}">
+                            <!-- 1. AVAILABLE SEAT (Clickable Form Submission when registered) -->
+                            <th:block th:if="${seat.status.name() == 'AVAILABLE'}">
+                                <form th:if="${isRegistered and #authorization.expression('hasRole(''CUSTOMER'')')}"
+                                      th:action="@{/events/{eventId}/seats/{seatId}/hold(eventId=${eventSession.eventId}, seatId=${seat.id})}"
+                                      method="post" style="display: inline; margin: 0;">
+                                    <button type="submit"
+                                            class="seat-button seat-available"
+                                            th:title="'Hold ' + ${seat.section} + '-' + ${seat.rowLabel} + '-' + ${seat.seatNumber}"
+                                            th:text="${seat.seatNumber}">
+                                        1
+                                    </button>
+                                </form>
+                                <button th:if="${!isRegistered or !#authorization.expression('hasRole(''CUSTOMER'')')}"
+                                        type="button"
+                                        class="seat-button seat-available"
+                                        disabled
+                                        style="opacity: 0.5; cursor: not-allowed;"
+                                        th:title="${isRegistered ? 'Only customers can hold seats' : 'Please register for event first'}"
+                                        th:text="${seat.seatNumber}">
+                                    1
+                                </button>
+                            </th:block>
+
+                            <!-- 2. HELD SEAT -->
+                            <button th:if="${seat.status.name() == 'HELD'}"
+                                    type="button"
+                                    class="seat-button seat-held"
+                                    disabled
+                                    th:title="'Held: ' + ${seat.section} + '-' + ${seat.rowLabel} + '-' + ${seat.seatNumber}"
+                                    th:text="${seat.seatNumber}">
+                                1
+                            </button>
+
+                            <!-- 3. BOOKED SEAT -->
+                            <button th:if="${seat.status.name() == 'BOOKED'}"
+                                    type="button"
+                                    class="seat-button seat-booked"
+                                    disabled
+                                    th:title="'Booked: ' + ${seat.section} + '-' + ${seat.rowLabel} + '-' + ${seat.seatNumber}"
+                                    th:text="${seat.seatNumber}">
+                                1
+                            </button>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Create Account — EventHub</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="card form-card">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <span class="brand-badge" style="margin-bottom: 0.5rem; display: inline-block;">Get Started</span>
+            <h2>Create Your Account</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+                Join EventHub as an attendee or event organizer.
+            </p>
+        </div>
+
+        <!-- Registration Form with Spring Validation Binding -->
+        <form th:action="@{/register}" th:object="${form}" method="post">
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" th:field="*{email}" class="form-input" 
+                       placeholder="name@example.com" required autofocus>
+                <span class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                    Invalid email address
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" th:field="*{password}" class="form-input" 
+                       placeholder="At least 6 characters" required>
+                <span class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">
+                    Password is required
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="role" class="form-label">Account Role</label>
+                <select id="role" th:field="*{role}" class="form-select">
+                    <option value="CUSTOMER">Attendee (Browse &amp; Reserve Seats)</option>
+                    <option value="ORGANIZER">Organizer (Create Events &amp; Layout Seats)</option>
+                </select>
+                <span class="form-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}">
+                    Role selection required
+                </span>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary btn-block btn-lg">
+                    Create Account &rarr;
+                </button>
+            </div>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+            Already have an account? 
+            <a th:href="@{/login}" style="font-weight: 600;">Sign in here</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

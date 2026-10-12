@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">EventHub — Conference & Seat Reservation</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="app-container">
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/events}" class="nav-brand">
+                <span>🎟️ EventHub</span>
+                <span class="brand-badge">Platform</span>
+            </a>
+
+            <nav>
+                <ul class="nav-links">
+                    <li><a th:href="@{/events}" class="nav-link">Events</a></li>
+
+                    <!-- Customer Nav Links -->
+                    <li sec:authorize="hasRole('CUSTOMER')">
+                        <a th:href="@{/reservations/my}" class="nav-link">My Reservations</a>
+                    </li>
+
+                    <!-- Organizer Nav Links -->
+                    <li sec:authorize="hasRole('ORGANIZER')">
+                        <a th:href="@{/organizer/events/new}" class="nav-link">Create Event</a>
+                    </li>
+
+                    <!-- Notifications Nav Link with Unread Badge -->
+                    <li sec:authorize="isAuthenticated()">
+                        <a th:href="@{/notifications}" class="nav-link" style="position: relative; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>🔔 Alerts</span>
+                            <span th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+                                  class="badge"
+                                  style="background: #ef4444; color: white; border-radius: 9999px; padding: 0.15rem 0.45rem; font-size: 0.7rem; font-weight: 700; line-height: 1;"
+                                  th:text="${unreadNotificationCount}">
+                                1
+                            </span>
+                        </a>
+                    </li>
+
+                    <!-- Anonymous User Links -->
+                    <li sec:authorize="isAnonymous()">
+                        <a th:href="@{/login}" class="btn btn-secondary btn-sm">Sign In</a>
+                    </li>
+                    <li sec:authorize="isAnonymous()">
+                        <a th:href="@{/register}" class="btn btn-primary btn-sm">Register</a>
+                    </li>
+
+                    <!-- Authenticated User Profile & Logout -->
+                    <li sec:authorize="isAuthenticated()" class="nav-user">
+                        <span class="user-badge" sec:authentication="name">user@email.com</span>
+                        <span sec:authorize="hasRole('ORGANIZER')" class="role-tag organizer">Organizer</span>
+                        <span sec:authorize="hasRole('CUSTOMER')" class="role-tag">Customer</span>
+
+                        <form th:action="@{/logout}" method="post" style="display: inline; margin: 0;">
+                            <button type="submit" class="btn btn-secondary btn-sm">Sign Out</button>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Flash Message Alerts -->
+        <div class="alerts-container">
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span>✅</span>
+                <span th:text="${successMessage}">Success message</span>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span>⚠️</span>
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+            <div th:if="${infoMessage}" class="alert alert-info">
+                <span>ℹ️</span>
+                <span th:text="${infoMessage}">Info message</span>
+            </div>
+        </div>
+
+        <!-- Injected Content Fragment -->
+        <div th:replace="${content}">
+            <p>Page body content goes here.</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 EventHub. Powered by Spring Boot 3.3, PostgreSQL 18 Row-Level Locking, and Thymeleaf.</p>
+    </footer>
+</div>
+</body>
+</html>

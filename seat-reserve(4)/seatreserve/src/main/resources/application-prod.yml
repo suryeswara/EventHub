@@ -1,0 +1,15 @@
+# Production Logging & JPA Profile
+spring:
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+logging:
+  level:
+    root: WARN
+    com.seatreserve: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.security: INFO
+    org.springframework.web: WARN

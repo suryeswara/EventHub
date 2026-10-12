@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${event.name + ' — EventHub'}">Event Details — EventHub</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div style="margin-bottom: 1.5rem;">
+        <a th:href="@{/events}" style="color: var(--text-muted); font-size: 0.9rem;">&larr; Back to all events</a>
+    </div>
+
+    <!-- Event Hero Card -->
+    <div class="card" style="margin-bottom: 2.5rem; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--primary), var(--accent-purple));"></div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <span class="brand-badge" style="margin-bottom: 0.5rem; display: inline-block;">Conference</span>
+                <h1 th:text="${event.name}" style="font-size: 2.5rem; margin: 0.25rem 0 1rem;">DevCon 2026</h1>
+                
+                <div class="event-meta" style="font-size: 1rem; margin: 0;">
+                    <div class="event-meta-item">
+                        <span>📍 Venue:</span>
+                        <strong th:text="${event.venue}" style="color: #fff;">Grand Exhibition Center</strong>
+                    </div>
+                    <div class="event-meta-item">
+                        <span>📅 Date &amp; Time:</span>
+                        <span th:text="${event.startTime}">2026-10-15 09:00 UTC</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendee Registration Action Card -->
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-subtle); padding: 1.25rem; border-radius: var(--radius-md); min-width: 280px; text-align: center;">
+                <h4 style="margin-bottom: 0.5rem; font-size: 1rem;">Attendee Registration</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                    Required before holding session seats.
+                </p>
+
+                <!-- Case 1: User is already registered -->
+                <div th:if="${isRegistered}" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                    <div class="role-tag" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                        <span>✓</span> You Are Registered
+                    </div>
+                    <small style="color: var(--text-muted);">You can reserve seats in any session below.</small>
+                </div>
+
+                <!-- Case 2: Customer logged in but NOT registered -->
+                <div th:if="${!isRegistered and #authorization.expression('hasRole(''CUSTOMER'')')}">
+                    <form th:action="@{/events/{id}/register(id=${event.id})}" method="post">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            🎟️ Register for Event
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Case 3: Anonymous user -->
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="btn btn-secondary btn-block">
+                        Sign In to Register
+                    </a>
+                </div>
+
+                <!-- Case 4: Organizer -->
+                <div sec:authorize="hasRole('ORGANIZER')">
+                    <span class="role-tag organizer">Organizer View</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sessions Section Header -->
+    <div class="page-header" style="margin-bottom: 1.5rem;">
+        <div>
+            <h2>Breakout Sessions &amp; Workshops</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Select a session to view the live interactive seat map.
+            </p>
+        </div>
+
+        <div sec:authorize="hasRole('ORGANIZER')">
+            <a th:href="@{/events/{id}/sessions/new(id=${event.id})}" class="btn btn-primary btn-sm">
+                <span>➕</span> Add Session
+            </a>
+        </div>
+    </div>
+
+    <!-- Empty Sessions State -->
+    <div th:if="${sessions == null || sessions.isEmpty()}" class="card" style="text-align: center; padding: 3rem;">
+        <h4>No sessions added to this event yet.</h4>
+        <div sec:authorize="hasRole('ORGANIZER')" style="margin-top: 1rem;">
+            <a th:href="@{/events/{id}/sessions/new(id=${event.id})}" class="btn btn-primary">Add First Session</a>
+        </div>
+    </div>
+
+    <!-- Sessions List -->
+    <div th:if="${sessions != null && !sessions.isEmpty()}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div th:each="sess : ${sessions}" class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+            <div style="max-width: 650px;">
+                <h3 th:text="${sess.title}" style="font-size: 1.25rem; margin-bottom: 0.35rem;">Opening Keynote</h3>
+                <p th:text="${sess.description}" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">
+                    Keynote session overview.
+                </p>
+
+                <div style="display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--text-dim); flex-wrap: wrap;">
+                    <div>⏰ <span th:text="${sess.startTime}">09:00</span> &ndash; <span th:text="${sess.endTime}">10:30</span></div>
+                    <div>🪑 Total Capacity: <strong th:text="${sess.capacity}" style="color: var(--text-main);">100</strong></div>
+                    <div>💳 Price: <strong th:text="${'$' + #numbers.formatDecimal(sess.price != null ? sess.price : 0, 1, 2)}" style="color: #38bdf8;">$49.00</strong></div>
+                    <div>
+                        🟢 Available Seats: 
+                        <strong th:text="${sess.availableSeats}" style="color: var(--status-available);">85</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <!-- If seats not generated yet and user is organizer -->
+                <div th:if="${sess.totalSeats == 0}" sec:authorize="hasRole('ORGANIZER')">
+                    <a th:href="@{/sessions/{id}/seats/generate(id=${sess.id})}" class="btn btn-secondary btn-sm">
+                        Generate Seats
+                    </a>
+                </div>
+
+                <a th:href="@{/sessions/{id}(id=${sess.id})}" class="btn btn-primary">
+                    View Seat Map &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket Confirmation — EventHub</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            margin: 0;
+            padding: 24px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            margin: 8px 0 0;
+            color: #e0e7ff;
+            font-size: 14px;
+        }
+        .content {
+            padding: 32px 24px;
+        }
+        .ticket-box {
+            background: #1e293b;
+            border: 1px dashed #4b5563;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .ticket-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+        }
+        .ticket-row:last-child {
+            border-bottom: none;
+        }
+        .ticket-label {
+            color: #94a3b8;
+        }
+        .ticket-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .total-row {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #4f46e5;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+        .footer {
+            text-align: center;
+            padding: 16px 24px 24px;
+            color: #64748b;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎟️ EventHub Ticket Confirmation</h1>
+        <p>Your session reservation is confirmed and ticket is issued!</p>
+    </div>
+
+    <div class="content">
+        <p style="font-size: 15px; margin-top: 0; color: #cbd5e1;">
+            Hello,
+        </p>
+        <p style="font-size: 14px; color: #94a3b8; line-height: 1.5;">
+            Thank you for your booking! Payment has been verified successfully. Below are your official conference ticket and admission details.
+        </p>
+
+        <div class="ticket-box">
+            <div class="ticket-row">
+                <span class="ticket-label">Event:</span>
+                <span class="ticket-value" th:text="${eventName}">DevCon 2026</span>
+            </div>
+            <div class="ticket-row">
+                <span class="ticket-label">Session:</span>
+                <span class="ticket-value" th:text="${sessionTitle}">Kubernetes in Action</span>
+            </div>
+            <div class="ticket-row">
+                <span class="ticket-label">Seat Assignment:</span>
+                <span class="ticket-value" th:text="${seatLabel}">Section A, Row 1, Seat 10</span>
+            </div>
+            <div class="ticket-row">
+                <span class="ticket-label">Reservation ID:</span>
+                <span class="ticket-value" th:text="'#' + ${reservationId}">#101</span>
+            </div>
+            <div class="ticket-row">
+                <span class="ticket-label">Payment ID:</span>
+                <span class="ticket-value" th:text="'#' + ${paymentId}">#42</span>
+            </div>
+            <div class="total-row">
+                <span>Amount Paid:</span>
+                <span th:text="${amount + ' ' + currency}">$99.00 USD</span>
+            </div>
+        </div>
+
+        <p style="font-size: 13px; color: #94a3b8; text-align: center;">
+            Please present this email or reservation confirmation at the session door for badge scanning.
+        </p>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 EventHub Inc. Concurrency-safe seat reservation platform.
+    </div>
+</div>
+</body>
+</html>

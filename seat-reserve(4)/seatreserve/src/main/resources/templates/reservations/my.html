@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>My Reservations — EventHub</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="page-header">
+        <div>
+            <h1>My Session Reservations</h1>
+            <p style="color: var(--text-muted); margin-top: 0.25rem;">
+                View your confirmed tickets and active seat holds.
+            </p>
+        </div>
+        <div>
+            <a th:href="@{/events}" class="btn btn-secondary">Browse More Events</a>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${reservations == null || reservations.isEmpty()}" class="card" style="text-align: center; padding: 4rem 2rem;">
+        <h3>No reservations yet</h3>
+        <p style="color: var(--text-muted); margin: 0.5rem 0 1.5rem;">
+            Explore conference sessions and reserve your first seat!
+        </p>
+        <a th:href="@{/events}" class="btn btn-primary">Explore Conferences</a>
+    </div>
+
+    <!-- Reservations List -->
+    <div th:if="${reservations != null && !reservations.isEmpty()}" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div th:each="res : ${reservations}" class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <!-- Status Badge -->
+                    <span th:if="${res.status.name() == 'CONFIRMED'}" class="role-tag" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4);">
+                        ✓ CONFIRMED TICKET
+                    </span>
+                    <span th:if="${res.status.name() == 'PENDING'}" class="role-tag" style="background: rgba(245, 158, 11, 0.2); color: #fde68a; border-color: rgba(245, 158, 11, 0.4);">
+                        ⏳ PENDING HOLD
+                    </span>
+                    <span th:if="${res.status.name() == 'EXPIRED'}" class="role-tag" style="background: rgba(107, 114, 128, 0.2); color: #9ca3af; border-color: rgba(107, 114, 128, 0.4);">
+                        ✕ EXPIRED
+                    </span>
+
+                    <span style="color: var(--text-dim); font-size: 0.85rem;" th:text="'Ref: #' + ${res.id}">Ref: #101</span>
+                </div>
+
+                <h3 th:text="${res.seat.session.event.name}" style="font-size: 1.3rem;">DevCon 2026</h3>
+                <p style="color: var(--primary); font-weight: 600; margin-top: 0.2rem;" th:text="${res.seat.session.title}">
+                    Kubernetes Workshop
+                </p>
+
+                <div style="display: flex; gap: 1.5rem; margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap;">
+                    <div>📍 <span th:text="${res.seat.session.event.venue}">Grand Exhibition Center</span></div>
+                    <div>⏰ <span th:text="${res.seat.session.startTime}">09:00 UTC</span></div>
+                    <div>Held At: <span th:text="${res.heldAt}">2026-09-29 12:00</span></div>
+                </div>
+            </div>
+
+            <!-- Seat Coordinate Box -->
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="ticket-seat-badge" style="margin: 0; padding: 0.6rem 1.25rem;">
+                    <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Seat</span>
+                    <span style="font-size: 1.35rem; font-weight: 800; color: #fff;">
+                        <span th:text="'Sec ' + ${res.seat.section}">Sec A</span> &bull; 
+                        <span th:text="'R' + ${res.seat.rowLabel}">R1</span> &bull; 
+                        <span th:text="'#' + ${res.seat.seatNumber}">#5</span>
+                    </span>
+                </div>
+
+                <!-- Complete Confirmation action if still pending -->
+                <div th:if="${res.status.name() == 'PENDING'}">
+                    <a th:href="@{/reservations/{id}/confirm(id=${res.id})}" class="btn btn-primary btn-sm">
+                        Complete Booking &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
